@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity import DeviceInfo
 
@@ -39,6 +40,31 @@ async def _async_entry_updated(hass: HomeAssistant, config_entry: CommaConfigEnt
     await coordinator.async_request_refresh()
 
 
+def _async_clear_stale_distance_unit_overrides(
+    hass: HomeAssistant, config_entry: CommaConfigEntry
+) -> None:
+    """Clear any per-entity unit overrides baked in by the old suggested_unit_of_measurement.
+
+    Older versions of this integration seeded a "mi" unit override into the entity
+    registry for the distance sensors. That override takes precedence over the
+    dynamic unit we now compute from the distance_unit option, so it must be
+    cleared once for the new option to actually take effect.
+    """
+    registry = er.async_get(hass)
+    for entry in er.async_entries_for_config_entry(registry, config_entry.entry_id):
+        if entry.domain != "sensor":
+            continue
+        if not entry.unique_id.endswith(("_total_distance", "_week_distance")):
+            continue
+        sensor_options = entry.options.get("sensor", {})
+        if sensor_options.get("unit_of_measurement") is not None:
+            registry.async_update_entity_options(
+                entry.entity_id,
+                "sensor",
+                {**sensor_options, "unit_of_measurement": None},
+            )
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: CommaConfigEntry,
@@ -67,6 +93,8 @@ async def async_setup_entry(
         api_client=api_client,
     )
     config_entry.async_on_unload(config_entry.add_update_listener(_async_entry_updated))
+
+    _async_clear_stale_distance_unit_overrides(hass, config_entry)
 
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
     return True

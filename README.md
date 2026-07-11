@@ -32,6 +32,14 @@ The integration is configured through the UI. You only need to provide your JWT 
 4. If you only want devices owned by you to show up, enable "Ignore devices you don't own".
    - This is primarily helpful for people who have had users share their devices with them for debugging purposes. These shared devices will be filtered out.
 
+### Distance Unit
+
+By default, distance sensors follow whatever unit system Home Assistant itself is configured for (Settings → General → Unit System). To force kilometers or miles regardless of that setting:
+
+1. Go to Settings → Devices & Services
+2. Find the comma.ai integration and click "Configure"
+3. Choose Automatic, Kilometers, or Miles under "Distance unit"
+
 ### Updating Your JWT Token
 
 JWT tokens expire after 90 days. To update your token:
@@ -71,12 +79,12 @@ For each comma.ai device, the following entities will be created:
 - `sensor.<device_name>_last_location_time` - Last location update timestamp
 
 #### All-Time Statistics
-- `sensor.<device_name>_total_distance` - Total distance driven with openpilot (km, auto-converts to miles)
+- `sensor.<device_name>_total_distance` - Total distance driven with openpilot (unit follows the configured Distance unit option)
 - `sensor.<device_name>_total_minutes` - Total minutes driven with openpilot
 - `sensor.<device_name>_total_routes` - Total number of routes driven with openpilot
 
 #### Weekly Statistics
-- `sensor.<device_name>_week_distance` - Distance driven this week (km, auto-converts to miles)
+- `sensor.<device_name>_week_distance` - Distance driven this week (unit follows the configured Distance unit option)
 - `sensor.<device_name>_week_minutes` - Minutes driven this week
 - `sensor.<device_name>_week_routes` - Number of routes driven this week
 

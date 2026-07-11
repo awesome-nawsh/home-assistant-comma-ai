@@ -12,6 +12,7 @@ PLATFORMS = [Platform.SENSOR, Platform.DEVICE_TRACKER, Platform.NUMBER]
 CONF_JWT_TOKEN: Final = "jwt_token"
 CONF_IGNORE_NON_OWNED: Final = "ignore_non_owned"
 CONF_UPDATE_INTERVAL: Final = "update_interval"
+CONF_DISTANCE_UNIT: Final = "distance_unit"
 
 API_BASE_URL: Final = "https://api.commadotai.com"
 
@@ -19,4 +20,10 @@ API_BASE_URL: Final = "https://api.commadotai.com"
 MIN_UPDATE_INTERVAL: Final = 5
 MAX_UPDATE_INTERVAL: Final = 600
 DEFAULT_UPDATE_INTERVAL: Final = 60
+
+# Distance unit options
+DISTANCE_UNIT_AUTO: Final = "auto"
+DISTANCE_UNIT_KM: Final = "km"
+DISTANCE_UNIT_MI: Final = "mi"
+DEFAULT_DISTANCE_UNIT: Final = DISTANCE_UNIT_AUTO
 

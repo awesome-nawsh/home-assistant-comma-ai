@@ -26,6 +26,25 @@
       "already_configured": "This comma.ai account is already configured."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "comma.ai options",
+        "data": {
+          "distance_unit": "Distance unit"
+        }
+      }
+    }
+  },
+  "selector": {
+    "distance_unit": {
+      "options": {
+        "auto": "Automatic (match Home Assistant's unit system)",
+        "km": "Kilometers",
+        "mi": "Miles"
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "dongle_id": {

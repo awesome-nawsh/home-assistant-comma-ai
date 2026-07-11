@@ -37,6 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Configurable distance unit (Automatic/Kilometers/Miles) via the integration's Options flow ("Configure" button), replacing the old fixed suggested-miles behavior
+
 ### Planned
 - Historical route visualization
 - Navigation destination setting

@@ -6,14 +6,28 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 import voluptuous as vol
-from homeassistant.config_entries import ConfigFlow
+from homeassistant.config_entries import ConfigFlow, OptionsFlow
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+)
 
 from .api import CommaAPIClient, CommaAPIError
-from .const import CONF_IGNORE_NON_OWNED, CONF_JWT_TOKEN, DOMAIN
+from .const import (
+    CONF_DISTANCE_UNIT,
+    CONF_IGNORE_NON_OWNED,
+    CONF_JWT_TOKEN,
+    DEFAULT_DISTANCE_UNIT,
+    DISTANCE_UNIT_AUTO,
+    DISTANCE_UNIT_KM,
+    DISTANCE_UNIT_MI,
+    DOMAIN,
+)
 
 if TYPE_CHECKING:
-    from homeassistant.config_entries import ConfigFlowResult
+    from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,6 +43,11 @@ class CommaConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for comma.ai."""
 
     VERSION = 1
+
+    @staticmethod
+    def async_get_options_flow(config_entry: ConfigEntry) -> CommaOptionsFlowHandler:
+        """Create the options flow for an existing entry."""
+        return CommaOptionsFlowHandler()
 
     def __init__(self) -> None:
         """Initialize the config flow."""
@@ -118,3 +137,30 @@ class CommaConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
 
+class CommaOptionsFlowHandler(OptionsFlow):
+    """Handle options for the comma.ai integration."""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Manage the options."""
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+
+        options_schema = vol.Schema(
+            {
+                vol.Optional(
+                    CONF_DISTANCE_UNIT,
+                    default=self.config_entry.options.get(
+                        CONF_DISTANCE_UNIT, DEFAULT_DISTANCE_UNIT
+                    ),
+                ): SelectSelector(
+                    SelectSelectorConfig(
+                        options=[DISTANCE_UNIT_AUTO, DISTANCE_UNIT_KM, DISTANCE_UNIT_MI],
+                        mode=SelectSelectorMode.DROPDOWN,
+                        translation_key=CONF_DISTANCE_UNIT,
+                    )
+                ),
+            }
+        )
+        return self.async_show_form(step_id="init", data_schema=options_schema)

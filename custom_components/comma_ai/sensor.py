@@ -15,15 +15,8 @@ from homeassistant.components.sensor import (
 from homeassistant.const import UnitOfLength, UnitOfTime
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.util.unit_conversion import DistanceConverter
 
-from .const import (
-    CONF_DISTANCE_UNIT,
-    DEFAULT_DISTANCE_UNIT,
-    DISTANCE_UNIT_KM,
-    DISTANCE_UNIT_MI,
-    DOMAIN,
-)
+from .const import DOMAIN
 from .coordinator import CommaDataUpdateCoordinator, CommaDevice
 
 if TYPE_CHECKING:
@@ -36,16 +29,6 @@ if TYPE_CHECKING:
     from . import CommaConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def resolve_distance_unit(hass: HomeAssistant, config_entry: CommaConfigEntry) -> str:
-    """Resolve the distance unit to display, honoring the configured option."""
-    unit = config_entry.options.get(CONF_DISTANCE_UNIT, DEFAULT_DISTANCE_UNIT)
-    if unit == DISTANCE_UNIT_KM:
-        return UnitOfLength.KILOMETERS
-    if unit == DISTANCE_UNIT_MI:
-        return UnitOfLength.MILES
-    return hass.config.units.length_unit
 
 
 class CommaSensorEntityDescription(SensorEntityDescription, frozen_or_thawed=True):
@@ -220,27 +203,12 @@ class CommaDeviceSensor(CoordinatorEntity[CommaDataUpdateCoordinator], SensorEnt
         )
 
     @property
-    def native_unit_of_measurement(self) -> str | None:
-        """Return the unit of measurement, resolving distance sensors dynamically."""
-        if self.entity_description.device_class == SensorDeviceClass.DISTANCE:
-            return resolve_distance_unit(self.hass, self.coordinator.config_entry)
-        return self.entity_description.native_unit_of_measurement
-
-    @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
         device = self.coordinator.data["devices"].get(self.dongle_id)
         if device is None:
             return None
-        value = self.entity_description.value_fn(device)
-        if (
-            value is not None
-            and self.entity_description.device_class == SensorDeviceClass.DISTANCE
-        ):
-            target_unit = resolve_distance_unit(self.hass, self.coordinator.config_entry)
-            if target_unit != UnitOfLength.KILOMETERS:
-                value = DistanceConverter.convert(value, UnitOfLength.KILOMETERS, target_unit)
-        return value
+        return self.entity_description.value_fn(device)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:

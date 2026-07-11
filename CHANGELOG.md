@@ -40,6 +40,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Configurable distance unit (Automatic/Kilometers/Miles) via the integration's Options flow ("Configure" button), replacing the old fixed suggested-miles behavior
 
+### Fixed
+- Distance sensors no longer get silently pinned back to miles by Home Assistant's own unit-migration compatibility shim; the distance_unit option now writes the entity registry override directly instead of clearing it
+
 ### Planned
 - Historical route visualization
 - Navigation destination setting

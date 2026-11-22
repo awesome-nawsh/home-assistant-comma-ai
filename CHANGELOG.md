@@ -16,6 +16,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multi-language translations
 - Automatic token expiration warnings
 
+## [1.2.0] - 2026-11-22
+
+Fork release (awesome-nawsh): aligns this fork with upstream bscholer v1.1.2. The code is identical to upstream v1.1.2; only the version number differs, because this fork had already published its own 1.1.1 and 1.1.2.
+
+### Changed
+- Includes everything in upstream 1.1.0, 1.1.1 and 1.1.2 below
+
+### Removed
+- Fork-only distance unit option (Automatic/Kilometers/Miles). Distance sensors now follow the Home Assistant unit system; change the unit per entity in the entity settings
+- Fork-only update interval slider. Polling is fixed at 60 seconds. The old update interval entity shows as unavailable and can be deleted
+
 ## [1.1.2] - 2026-11-19
 
 ### Added

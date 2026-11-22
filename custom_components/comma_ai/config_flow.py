@@ -3,31 +3,18 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
 import voluptuous as vol
-from homeassistant.config_entries import ConfigFlow, OptionsFlow
+from homeassistant.config_entries import ConfigFlow
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.selector import (
-    SelectSelector,
-    SelectSelectorConfig,
-    SelectSelectorMode,
-)
 
 from .api import CommaAPIClient, CommaAPIError
-from .const import (
-    CONF_DISTANCE_UNIT,
-    CONF_IGNORE_NON_OWNED,
-    CONF_JWT_TOKEN,
-    DEFAULT_DISTANCE_UNIT,
-    DISTANCE_UNIT_AUTO,
-    DISTANCE_UNIT_KM,
-    DISTANCE_UNIT_MI,
-    DOMAIN,
-)
+from .const import CONF_IGNORE_NON_OWNED, CONF_JWT_TOKEN, DOMAIN, JWT_URL
 
 if TYPE_CHECKING:
-    from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
+    from homeassistant.config_entries import ConfigFlowResult
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -44,11 +31,6 @@ class CommaConfigFlow(ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
-    @staticmethod
-    def async_get_options_flow(config_entry: ConfigEntry) -> CommaOptionsFlowHandler:
-        """Create the options flow for an existing entry."""
-        return CommaOptionsFlowHandler()
-
     def __init__(self) -> None:
         """Initialize the config flow."""
         super().__init__()
@@ -64,7 +46,7 @@ class CommaConfigFlow(ConfigFlow, domain=DOMAIN):
         )
         try:
             profile = await api_client.get_profile()
-            self.username = profile.get("username", "Unknown")
+            self.username = profile.get("username") or profile.get("email") or profile["id"]
             _LOGGER.debug("Successfully authenticated as: %s", self.username)
         except CommaAPIError as exc:
             _LOGGER.error("Authentication failed: %s", exc)
@@ -97,6 +79,7 @@ class CommaConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=schema,
             errors=self.errors,
+            description_placeholders={"jwt_url": JWT_URL},
         )
 
     async def async_step_reconfigure(
@@ -132,35 +115,38 @@ class CommaConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=schema,
             errors=self.errors,
             description_placeholders={
-                "username": self.username or "your account"
+                "username": self.username or "your account",
+                "jwt_url": JWT_URL,
             },
         )
 
+    async def async_step_reauth(
+        self, entry_data: Mapping[str, Any]
+    ) -> ConfigFlowResult:
+        """Handle reauth when the JWT token has expired."""
+        return await self.async_step_reauth_confirm()
 
-class CommaOptionsFlowHandler(OptionsFlow):
-    """Handle options for the comma.ai integration."""
-
-    async def async_step_init(
+    async def async_step_reauth_confirm(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Manage the options."""
-        if user_input is not None:
-            return self.async_create_entry(data=user_input)
+        """Ask for a new JWT token."""
+        entry = self._get_reauth_entry()
 
-        options_schema = vol.Schema(
-            {
-                vol.Optional(
-                    CONF_DISTANCE_UNIT,
-                    default=self.config_entry.options.get(
-                        CONF_DISTANCE_UNIT, DEFAULT_DISTANCE_UNIT
-                    ),
-                ): SelectSelector(
-                    SelectSelectorConfig(
-                        options=[DISTANCE_UNIT_AUTO, DISTANCE_UNIT_KM, DISTANCE_UNIT_MI],
-                        mode=SelectSelectorMode.DROPDOWN,
-                        translation_key=CONF_DISTANCE_UNIT,
-                    )
-                ),
-            }
+        if user_input is not None:
+            self.data[CONF_JWT_TOKEN] = user_input[CONF_JWT_TOKEN]
+            await self.validate_config()
+
+            if not self.errors:
+                return self.async_update_reload_and_abort(
+                    entry,
+                    data_updates={CONF_JWT_TOKEN: user_input[CONF_JWT_TOKEN]},
+                )
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=vol.Schema({vol.Required(CONF_JWT_TOKEN): str}),
+            errors=self.errors,
+            description_placeholders={"jwt_url": JWT_URL},
         )
-        return self.async_show_form(step_id="init", data_schema=options_schema)
+
+

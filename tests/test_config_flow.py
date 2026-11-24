@@ -72,6 +72,21 @@ async def test_invalid_token(hass: HomeAssistant, aioclient_mock) -> None:
     assert result["errors"] == {"base": "invalid_auth"}
 
 
+async def test_retry_after_invalid_token(hass: HomeAssistant, aioclient_mock) -> None:
+    """A valid token is accepted after a rejected one in the same flow."""
+    aioclient_mock.get(f"{API}/v1/me/", status=401)
+    result = await _start(hass, token="bad-token")
+    assert result["errors"] == {"base": "invalid_auth"}
+
+    aioclient_mock.clear_requests()
+    aioclient_mock.get(f"{API}/v1/me/", json={"id": "1", "username": "tester"})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_JWT_TOKEN: "new-token"}
+    )
+
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+
+
 async def test_duplicate_account_aborts(hass: HomeAssistant, aioclient_mock) -> None:
     """The same account cannot be added twice."""
     make_entry().add_to_hass(hass)

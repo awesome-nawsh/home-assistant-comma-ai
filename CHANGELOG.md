@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multi-language translations
 - Automatic token expiration warnings
 
+## [1.2.1] - 2026-11-24
+
+Fork release (awesome-nawsh).
+
+### Fixed
+- After a rejected JWT token, the setup, reconfigure and reauth dialogs kept showing the error and refused a valid token until the dialog was closed and reopened
+
 ## [1.2.0] - 2026-11-22
 
 Fork release (awesome-nawsh): aligns this fork with upstream bscholer v1.1.2. The code is identical to upstream v1.1.2; only the version number differs, because this fork had already published its own 1.1.1 and 1.1.2.

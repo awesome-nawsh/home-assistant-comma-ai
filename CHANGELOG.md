@@ -16,14 +16,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multi-language translations
 - Automatic token expiration warnings
 
-## [1.2.1] - 2026-11-24
+## [2026.11.0] - 2026-11-24
+
+Fork release (awesome-nawsh): aligns this fork with upstream bscholer v1.2.0. The code is upstream v1.2.0 plus the config flow retry fix from fork release 1.2.1. From this release the fork uses date-based versions (year.month.patch) so its numbers no longer clash with upstream's.
+
+### Changed
+- Includes everything in upstream 1.2.0 below: road and driver camera entities, the driving model sensor, and the Home Assistant 2025.12 minimum
+
+## [1.2.1] - 2026-11-24 (fork release)
 
 Fork release (awesome-nawsh).
 
 ### Fixed
 - After a rejected JWT token, the setup, reconfigure and reauth dialogs kept showing the error and refused a valid token until the dialog was closed and reopened
 
-## [1.2.0] - 2026-11-22
+## [1.2.0] - 2026-11-23
+
+### Added
+- Road camera (outside) and driver camera (inside) entities, using comma connect's WebRTC live stream. Streams start on demand and stop after 30 seconds without viewers, snapshots and MJPEG are supported, and a `last_error` attribute explains why a stream could not start. Thanks @ds-sebastian (#9)
+- Driving model sensor showing the active model on devices running sunnypilot or a fork that publishes it (shows unknown on stock openpilot). Thanks @Nimijneb (#18)
+
+### Changed
+- Requires Home Assistant 2025.12 or newer (for aiortc's PyAV requirement)
+
+## [1.2.0] - 2026-11-22 (fork release)
 
 Fork release (awesome-nawsh): aligns this fork with upstream bscholer v1.1.2. The code is identical to upstream v1.1.2; only the version number differs, because this fork had already published its own 1.1.1 and 1.1.2.
 

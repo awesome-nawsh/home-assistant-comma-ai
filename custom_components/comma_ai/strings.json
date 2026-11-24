@@ -45,6 +45,9 @@
       "car_battery_voltage": {
         "name": "Car battery"
       },
+      "driving_model": {
+        "name": "Driving model"
+      },
       "dongle_id": {
         "name": "Dongle ID"
       },
@@ -104,8 +107,14 @@
       "location": {
         "name": "Location"
       }
+    },
+    "camera": {
+      "road_camera": {
+        "name": "Road camera"
+      },
+      "driver_camera": {
+        "name": "Driver camera"
+      }
     }
   }
 }
-
-

@@ -40,6 +40,7 @@ class CommaConfigFlow(ConfigFlow, domain=DOMAIN):
 
     async def validate_config(self) -> None:
         """Validate the JWT token."""
+        self.errors = {}
         api_client = CommaAPIClient(
             jwt_token=self.data[CONF_JWT_TOKEN],
             session=async_get_clientsession(self.hass),
